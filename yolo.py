@@ -1,9 +1,11 @@
 import os
 import numpy as np
+import copy
 import colorsys
 import tensorflow as tf
 from timeit import default_timer as timer
-import tensorflow.keras.backend as K
+from tensorflow.keras import backend as K
+from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Lambda
 from tensorflow.keras.models import Model
@@ -16,9 +18,9 @@ class YOLO(object):
         "model_path": 'model_data/weight.h5',
         "anchors_path": 'model_data/yolo_anchors.txt',
         "classes_path": 'model_data/classes.txt',
-        "score": 0.5,
-        "iou": 0.3,
-        "eager": False,
+        "score" : 0.5,
+        "iou" : 0.3,
+        "eager" : False,
         # 显存比较小可以使用416x416
         # 显存比较大可以使用608x608
         "model_image_size" : (416, 416)
@@ -40,7 +42,7 @@ class YOLO(object):
         self.anchors = self._get_anchors()
         if not self.eager:
             tf.compat.v1.disable_eager_execution()
-            self.sess = tf.compat.v1.Session()
+            self.sess = tf.compat.v1.keras.backend.get_session()
         self.generate()
 
     #---------------------------------------------------#
