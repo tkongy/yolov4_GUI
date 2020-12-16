@@ -45,11 +45,10 @@ def vedio():
             capture.release()
             break
 
-    yolo.close_session()
-'''
+    tf.keras.backend.clear_session()
+
 if __name__ == '__main__':
     fp1 = 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\weight.h5'
     fp2 = 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\classes.txt'
     YOLO.update(fp1=fp1, fp2=fp2)
     vedio()
-'''

@@ -110,7 +110,6 @@ class YOLO(object):
             self.boxes, self.scores, self.classes = yolo_eval(self.yolo_model.output, self.anchors,
                                                               num_classes, self.input_image_shape,
                                                               score_threshold=self.score, iou_threshold=self.iou)
-
     # ---------------------------------------------------#
     #   检测图片
     # ---------------------------------------------------#

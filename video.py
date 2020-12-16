@@ -44,4 +44,4 @@ while(True):
         capture.release()
         break
 
-yolo.close_session()    
+yolo.close_session()
