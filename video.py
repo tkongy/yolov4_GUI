@@ -21,7 +21,7 @@ t1 = time.time()
 while(True):
     t1 = time.time()
     # 读取某一帧
-    ref,frame=capture.read()
+    ref, frame = capture.read()
     # 格式转变，BGRtoRGB
     frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
     # 转变成Image

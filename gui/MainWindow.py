@@ -3,8 +3,9 @@ import os
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from gui.video_gui import video
+from gui.video_gui import vedio
 from gui.picture_gui import runimage
+from gui.yolo_gui_vedio import YOLO
 import os
 
 
@@ -285,7 +286,16 @@ class MainWin(QMainWindow):
         self.imageLabel2.setPixmap(QPixmap(self.image))
     '''------------------视频检测------------------'''
     def run(self):
-        video(fp)
+        setname = self.combox.currentText()
+        print(setname)
+        f = open('D:\pythonfile\yolov4-tiny-tf2-master\gui\setup\\'+setname+'.txt', 'r')
+        line = f.read()
+        f.close()
+        fp1, fp2 = line.split()
+        print(fp1)
+        print(fp2)
+        YOLO.update(fp1=fp1, fp2=fp2)
+        vedio()
 
 if __name__ =='__main__':
     app = QApplication(sys.argv)
