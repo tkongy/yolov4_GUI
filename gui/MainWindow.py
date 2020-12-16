@@ -23,17 +23,17 @@ class MainWin(QMainWindow):
         self.toolbar = QToolBar
         self.toolbar = self.addToolBar("工具栏")
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        '''配置'''
+        '''------------------config------------------'''
         self.name = []
         self.setuppath = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup'
-
+        '''------------------------------------------'''
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
         self.createset.triggered.connect(self.CreateSit)
         self.deleteset = QAction("删除场景")
         self.deleteset.setShortcut("Ctrl+D")
         self.deleteset.triggered.connect(self.DeleteSit)
-        self.camera = QAction("摄像头配置")
+        self.camera = QAction("摄像头设置")
         self.camera.setShortcut("Ctrl+C")
         self.camera.triggered.connect(self.cameraset)
         self.setup.addAction(self.createset)
@@ -75,7 +75,7 @@ class MainWin(QMainWindow):
         self.mainlayout.addWidget(self.rightBox)
         self.mainbox.setLayout(self.mainlayout)
         self.setCentralWidget(self.mainbox)
-    '''新建场景'''
+    '''------------------新建场景------------------'''
     def CreateSit(self):
         self.createdialog = QDialog()
         self.createdialog.setWindowTitle('新建应用场景')
@@ -151,10 +151,10 @@ class MainWin(QMainWindow):
     def onClick_class(self):
         classpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.txt )')
         self.classLineEdit.setText(classpath)
-    '''联系我们'''
+    '''------------------联系我们------------------'''
     def connect_us(self):
         pass
-    '''删除场景'''
+    '''------------------删除场景------------------'''
     def DeleteSit(self):
         self.deledialog = QDialog()
         self.deledialog.setWindowTitle('删除应用场景')
@@ -180,7 +180,6 @@ class MainWin(QMainWindow):
         self.deledialog.setLayout(self.deleLayout)
 
         self.deledialog.exec()
-
     '''删除配置'''
     def deletesetup(self):
         if self.delenamecombox.currentText() != ' ':
@@ -191,10 +190,10 @@ class MainWin(QMainWindow):
             self.setinfo()
             self.combox.clear()
             self.combox.addItems(self.name)
-    '''摄像头设置'''
+    '''------------------摄像头设置------------------'''
     def cameraset(self):
         pass
-    '''主界面设计'''
+    '''------------------右侧主页面设计------------------'''
     def createright(self):
         self.rightBox = QGroupBox()
         self.layout = QGridLayout()
@@ -209,7 +208,7 @@ class MainWin(QMainWindow):
         self.layout.addWidget(self.graphic3, 1, 0, 1, 2)
         self.layout.setSpacing(20)
         self.rightBox.setLayout(self.layout)
-
+    '''------------------左侧主页面设计------------------'''
     def createleft(self):
         self.leftBox = QGroupBox()
         self.layout = QVBoxLayout()
@@ -233,7 +232,7 @@ class MainWin(QMainWindow):
         self.layout.addWidget(self.buttonexit, 4)
         self.layout.addStretch()
         self.leftBox.setLayout(self.layout)
-    '''配置单信息'''
+    '''------------------配置信息------------------'''
     def setinfo(self):
         def listdir(path, list_name):
             for file in os.listdir(path):
@@ -244,7 +243,7 @@ class MainWin(QMainWindow):
                     list_name.append(os.path.splitext(file_path)[0])
             return list_name
         self.name = listdir(self.setuppath, self.name)
-    '''退出系统'''
+    '''------------------退出系统------------------'''
     def onClick_exit(self):
         app = QApplication.instance()
         app.quit()
@@ -252,7 +251,7 @@ class MainWin(QMainWindow):
     def selectionChange(self):
         global fp
         fp = self.comboBox.currentText()
-    '''图像检测'''
+    '''------------------图像检测------------------'''
     def picturemode(self):
         self.imgdialog = QDialog()
         self.imgdialog.setWindowTitle('图像检测')
@@ -284,7 +283,7 @@ class MainWin(QMainWindow):
         self.image = runimage(fname)
     def seeout(self):
         self.imageLabel2.setPixmap(QPixmap(self.image))
-    '''视频检测'''
+    '''------------------视频检测------------------'''
     def run(self):
         video(fp)
 
