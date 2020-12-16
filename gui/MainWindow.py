@@ -23,13 +23,16 @@ class MainWin(QMainWindow):
         self.toolbar = QToolBar
         self.toolbar = self.addToolBar("工具栏")
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        '''配置'''
+        self.name = []
+        self.setuppath = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup'
 
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
         self.createset.triggered.connect(self.CreateSit)
         self.deleteset = QAction("删除场景")
         self.deleteset.setShortcut("Ctrl+D")
-        self.deleteset.triggered.connect(self.deletesit)
+        self.deleteset.triggered.connect(self.DeleteSit)
         self.camera = QAction("摄像头配置")
         self.camera.setShortcut("Ctrl+C")
         self.camera.triggered.connect(self.cameraset)
@@ -50,7 +53,7 @@ class MainWin(QMainWindow):
         self.newsit.triggered.connect(self.CreateSit)
         self.toolbar.addAction(self.newsit)
         self.delete = QAction(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\delete.png'), "删除场景", self)
-        self.delete.triggered.connect(self.deletesit)
+        self.delete.triggered.connect(self.DeleteSit)
         self.toolbar.addAction(self.delete)
         self.newcamera = QAction(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\camera.png'), "摄像头配置", self)
         self.newcamera.triggered.connect(self.cameraset)
@@ -74,9 +77,9 @@ class MainWin(QMainWindow):
         self.setCentralWidget(self.mainbox)
     '''新建场景'''
     def CreateSit(self):
-        self.dialog = QDialog()
-        self.setWindowTitle('新建应用场景')
-        self.setWindowModality(Qt.ApplicationModal)
+        self.createdialog = QDialog()
+        self.createdialog.setWindowTitle('新建应用场景')
+        self.createdialog.setWindowModality(Qt.ApplicationModal)
 
         self.nameLabel = QLabel('&Name', self)
         self.nameLabel.setText('场景名称(&N)')
@@ -90,91 +93,104 @@ class MainWin(QMainWindow):
         self.weightLineEdit = QLineEdit(self)
         self.weightLineEdit.setPlaceholderText('请输入场景权重文件地址')
         self.weightLabel.setBuddy(self.weightLineEdit)
+        self.weightButton = QPushButton('加载权重')
+        self.weightButton.clicked.connect(self.onClick_weight)
 
         self.classLabel = QLabel('&Class', self)
         self.classLabel.setText('场景类别(&C)')
         self.classLineEdit = QLineEdit(self)
         self.classLineEdit.setPlaceholderText('请输入场景类别文件地址')
         self.classLabel.setBuddy(self.classLineEdit)
-
-        def savesetup():
-            if self.nameLineEdit.text() != '':
-                f = open('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\setup\\' + self.nameLineEdit.text() + '.txt',
-                         'w')
-                f.write(self.nameLineEdit.text() + ' ' + self.weightLineEdit.text() + ' ' + self.classLineEdit.text())
-                self.dialog.reject()
+        self.classButton = QPushButton('加载类别')
+        self.classButton.clicked.connect(self.onClick_class)
 
         self.btnOK = QPushButton('确定')
-        self.btnOK.clicked.connect(savesetup)
+        self.btnOK.clicked.connect(self.savesetup)
         self.btnCancel = QPushButton('取消')
         self.btnCancel.clicked.connect(self.nameLineEdit.clear)
         self.btnCancel.clicked.connect(self.weightLineEdit.clear)
         self.btnCancel.clicked.connect(self.classLineEdit.clear)
         self.btnExit = QPushButton('退出')
-        self.btnExit.clicked.connect(self.dialog.reject)
+        self.btnExit.clicked.connect(self.createdialog.reject)
 
-        self.mainLayout = QGridLayout(self)
-        self.mainLayout.addWidget(self.nameLabel, 0, 0)
-        self.mainLayout.addWidget(self.nameLineEdit, 0, 1, 1, 2)
+        self.createLayout = QGridLayout(self)
+        self.createLayout.addWidget(self.nameLabel, 0, 0)
+        self.createLayout.addWidget(self.nameLineEdit, 0, 1, 1, 3)
 
-        self.mainLayout.addWidget(self.weightLabel, 1, 0)
-        self.mainLayout.addWidget(self.weightLineEdit, 1, 1, 1, 2)
+        self.createLayout.addWidget(self.weightLabel, 1, 0)
+        self.createLayout.addWidget(self.weightLineEdit, 1, 1, 1, 2)
+        self.createLayout.addWidget(self.weightButton, 1, 3, 1, 1)
 
-        self.mainLayout.addWidget(self.classLabel, 2, 0)
-        self.mainLayout.addWidget(self.classLineEdit, 2, 1, 1, 2)
+        self.createLayout.addWidget(self.classLabel, 2, 0)
+        self.createLayout.addWidget(self.classLineEdit, 2, 1, 1, 2)
+        self.createLayout.addWidget(self.classButton, 2, 3, 1, 1)
 
-        self.mainLayout.addWidget(self.btnOK, 3, 0)
-        self.mainLayout.addWidget(self.btnCancel, 3, 1)
-        self.mainLayout.addWidget(self.btnExit, 3, 2)
-        self.dialog.setLayout(self.mainLayout)
+        self.createLayout.addWidget(self.btnOK, 3, 1)
+        self.createLayout.addWidget(self.btnCancel, 3, 2)
+        self.createLayout.addWidget(self.btnExit, 3, 3)
+        self.createdialog.setLayout(self.createLayout)
 
-        self.dialog.exec()
+        self.createdialog.exec()
+
+    def savesetup(self):
+        if self.nameLineEdit.text() != '':
+            f = open('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\setup\\' + self.nameLineEdit.text() + '.txt',
+                     'w')
+            f.write(self.weightLineEdit.text() + ' ' + self.classLineEdit.text())
+            self.createdialog.reject()
+            self.name = []
+            self.setinfo()
+            self.combox.clear()
+            self.combox.addItems(self.name)
+
+    def onClick_weight(self):
+        weightpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.h5 )')
+        print(weightpath)
+        self.weightLineEdit.setText(weightpath)
+
+    def onClick_class(self):
+        classpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.txt )')
+        self.classLineEdit.setText(classpath)
     '''联系我们'''
     def connect_us(self):
         pass
     '''删除场景'''
-    def deletesit(self):
+    def DeleteSit(self):
         self.deledialog = QDialog()
-        self.setWindowTitle('删除应用场景')
-        self.setWindowModality(Qt.ApplicationModal)
-        path = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup'
-        name = []
+        self.deledialog.setWindowTitle('删除应用场景')
+        self.deledialog.setWindowModality(Qt.ApplicationModal)
 
-        def listdir(path, list_name):
-            for file in os.listdir(path):
-                file_path = file
-                if os.path.isdir(file_path):
-                    listdir(file_path, list_name)
-                elif os.path.splitext(file_path)[1] == '.txt':
-                    list_name.append(os.path.splitext(file_path)[0])
-            return list_name
+        self.delenameLabel = QLabel('场景名称', self)
+        self.delenamecombox = QComboBox()
+        self.delenamecombox.setPlaceholderText('请选择要删除的场景名称')
+        self.name = []
+        self.setinfo()
+        self.delenamecombox.addItems(self.name)
 
-        name = listdir(path, name)
+        self.delebtnOK = QPushButton('确定')
+        self.delebtnOK.clicked.connect(self.deletesetup)
+        self.delebtnExit = QPushButton('退出')
+        self.delebtnExit.clicked.connect(self.deledialog.reject)
 
-        self.nameLabel = QLabel('场景名称', self)
-        self.namecombox = QComboBox()
-        self.namecombox.setPlaceholderText('请选择新建场景名称')
-        self.namecombox.addItems(name)
-
-        def deleteset():
-            if self.namecombox.currentText()!=' ':
-                filename = 'D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\setup\\' + self.namecombox.currentText() + '.txt'
-                os.remove(filename)
-                self.deledialog.reject()
-
-        self.btnOK = QPushButton('确定')
-        self.btnOK.clicked.connect(deleteset)
-        self.btnExit = QPushButton('退出')
-        self.btnExit.clicked.connect(self.deledialog.reject)
-
-        self.mainLayout = QGridLayout(self)
-        self.mainLayout.addWidget(self.nameLabel, 0, 0, 1, 1)
-        self.mainLayout.addWidget(self.namecombox, 0, 1, 1, 2)
-        self.mainLayout.addWidget(self.btnOK, 1, 1, 1, 1)
-        self.mainLayout.addWidget(self.btnExit, 1, 2, 1, 1)
-        self.deledialog.setLayout(self.mainLayout)
+        self.deleLayout = QGridLayout(self)
+        self.deleLayout.addWidget(self.delenameLabel, 0, 0, 1, 1)
+        self.deleLayout.addWidget(self.delenamecombox, 0, 1, 1, 2)
+        self.deleLayout.addWidget(self.delebtnOK, 1, 1, 1, 1)
+        self.deleLayout.addWidget(self.delebtnExit, 1, 2, 1, 1)
+        self.deledialog.setLayout(self.deleLayout)
 
         self.deledialog.exec()
+
+    '''删除配置'''
+    def deletesetup(self):
+        if self.delenamecombox.currentText() != ' ':
+            filename = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup\\' + self.delenamecombox.currentText() + '.txt'
+            os.remove(filename)
+            self.deledialog.reject()
+            self.name = []
+            self.setinfo()
+            self.combox.clear()
+            self.combox.addItems(self.name)
     '''摄像头设置'''
     def cameraset(self):
         pass
@@ -199,20 +215,10 @@ class MainWin(QMainWindow):
         self.layout = QVBoxLayout()
         self.label = QLabel("请选择应用场景！")
         self.combox = QComboBox()
-        path = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup'
-        name = []
 
-        def listdir(path, list_name):
-            for file in os.listdir(path):
-                file_path = file
-                if os.path.isdir(file_path):
-                    listdir(file_path, list_name)
-                elif os.path.splitext(file_path)[1] == '.txt':
-                    list_name.append(os.path.splitext(file_path)[0])
-            return list_name
-
-        name = listdir(path, name)
-        self.combox.addItems(name)
+        self.combox.setPlaceholderText('请选择场景名称')
+        self.setinfo()
+        self.combox.addItems(self.name)
         self.buttonexit = QPushButton("退出应用程序")
         self.buttonexit.clicked.connect(self.onClick_exit)
         self.buttonok = QPushButton("确定应用场景")
@@ -227,6 +233,17 @@ class MainWin(QMainWindow):
         self.layout.addWidget(self.buttonexit, 4)
         self.layout.addStretch()
         self.leftBox.setLayout(self.layout)
+    '''配置单信息'''
+    def setinfo(self):
+        def listdir(path, list_name):
+            for file in os.listdir(path):
+                file_path = file
+                if os.path.isdir(file_path):
+                    listdir(file_path, list_name)
+                elif os.path.splitext(file_path)[1] == '.txt':
+                    list_name.append(os.path.splitext(file_path)[0])
+            return list_name
+        self.name = listdir(self.setuppath, self.name)
     '''退出系统'''
     def onClick_exit(self):
         app = QApplication.instance()
@@ -237,9 +254,9 @@ class MainWin(QMainWindow):
         fp = self.comboBox.currentText()
     '''图像检测'''
     def picturemode(self):
-        self.dialog = QDialog()
-        self.setWindowTitle('图像检测')
-        self.dialog.resize(360, 300)
+        self.imgdialog = QDialog()
+        self.imgdialog.setWindowTitle('图像检测')
+        self.imgdialog.resize(360, 300)
         self.setWindowModality(Qt.ApplicationModal)
 
         self.layout = QVBoxLayout()
@@ -257,15 +274,13 @@ class MainWin(QMainWindow):
         self.button3.clicked.connect(self.seeout)
         self.layout.addWidget(self.button3)
 
-        self.dialog.setLayout(self.layout)
-        self.dialog.exec()
+        self.imgdialog.setLayout(self.layout)
+        self.imgdialog.exec()
     def loadImage(self):
         global fname
         fname,_ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.jpg *.png)')
-        print(fname)
         self.imageLabel1.setPixmap(QPixmap(fname))
     def runImage(self):
-        print(fname)
         self.image = runimage(fname)
     def seeout(self):
         self.imageLabel2.setPixmap(QPixmap(self.image))
