@@ -147,7 +147,6 @@ class MainWin(QMainWindow):
 
     def onClick_weight(self):
         weightpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.h5 )')
-        print(weightpath)
         self.weightLineEdit.setText(weightpath)
 
     def onClick_class(self):
@@ -287,31 +286,41 @@ class MainWin(QMainWindow):
         self.imgdialog.resize(360, 300)
         self.setWindowModality(Qt.ApplicationModal)
 
-        self.layout = QVBoxLayout()
+        self.layout = QGridLayout()
         self.button1 = QPushButton('加载图片')
         self.button1.clicked.connect(self.loadImage)
         self.imageLabel1 = QLabel()
-        self.layout.addWidget(self.button1)
-        self.layout.addWidget(self.imageLabel1)
+        self.imgpathbuttton = QPushButton('选择文件保存路径')
+        self.imgpath = QLineEdit()
+        self.imgpathbuttton.clicked.connect(self.imgsavepath)
         self.button2 = QPushButton('运行检测')
         self.button2.clicked.connect(self.runImage)
         self.imageLabel2 = QLabel()
-        self.layout.addWidget(self.button2)
-        self.layout.addWidget(self.imageLabel2)
         self.button3 = QPushButton('查看结果')
         self.button3.clicked.connect(self.seeout)
-        self.layout.addWidget(self.button3)
 
+        self.layout.addWidget(self.button1, 0, 0, 1, 1)
+        self.layout.addWidget(self.imgpathbuttton, 0, 1, 1, 1)
+        self.layout.addWidget(self.imgpath, 1, 0, 1, 2)
+        self.layout.addWidget(self.imageLabel1, 2, 0, 2, 2)
+        self.layout.addWidget(self.button2, 4, 0, 1, 1)
+        self.layout.addWidget(self.button3, 4, 1, 1, 1)
+        self.layout.addWidget(self.imageLabel2, 5, 0, 2, 2)
         self.imgdialog.setLayout(self.layout)
         self.imgdialog.exec()
     def loadImage(self):
-        global fname
-        fname,_ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.jpg *.png)')
-        self.imageLabel1.setPixmap(QPixmap(fname))
+        self.fname,_ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.jpg *.png)')
+        self.imageLabel1.setPixmap(QPixmap(self.fname))
     def runImage(self):
-        self.image = runimage(fname)
+        if self.imgsavepath:
+            self.image = runimage(self.fname, 'D:/pythonfile/yolov4-tiny-tf2-master/gui/outimage')
+        else:
+            self.image = runimage(self.fname, self.imgsavepath)
     def seeout(self):
         self.imageLabel2.setPixmap(QPixmap(self.image))
+    def imgsavepath(self):
+        self.imgsavepath = QFileDialog.getExistingDirectory(self, '保存路径')
+        self.imgpath.setText(self.imgsavepath)
     '''------------------视频检测------------------'''
     def run(self):
         setname = self.combox.currentText()
