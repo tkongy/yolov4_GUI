@@ -44,8 +44,8 @@ def vedio():
         if c == 27:
             capture.release()
             break
-
     tf.keras.backend.clear_session()
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     fp1 = 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\weight.h5'

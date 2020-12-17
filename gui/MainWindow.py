@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from gui.video_gui import vedio
 from gui.picture_gui import runimage
 from gui.yolo_gui_vedio import YOLO
+from gui.cameraset import Camera
 import os
 
 
@@ -191,8 +192,35 @@ class MainWin(QMainWindow):
             self.setinfo()
             self.combox.clear()
             self.combox.addItems(self.name)
-    '''------------------摄像头设置------------------'''
+    '''------------------摄像头配置------------------'''
     def cameraset(self):
+        self.camdialog = QDialog()
+        self.camdialog.setWindowTitle('摄像头配置')
+        self.camdialog.resize(300, 220)
+        self.camdialog.setWindowModality(Qt.ApplicationModal)
+
+        self.cambutton = QPushButton('获取摄像头配置')
+        self.camcombox = QComboBox()
+        self.camcombox.setPlaceholderText('请选择摄像头编号')
+        self.camsetbutton = QPushButton('确定摄像头配置')
+
+        self.cambutton.clicked.connect(self.caminfo)
+        self.camsetbutton.clicked.connect(self.backcaminfo)
+
+        self.camlayout = QVBoxLayout()
+        self.camlayout.addWidget(self.cambutton)
+        self.camlayout.addWidget(self.camcombox)
+        self.camlayout.addWidget(self.camsetbutton)
+        self.camdialog.setLayout(self.camlayout)
+
+        self.camdialog.exec()
+
+    def caminfo(self):
+        self.camname = []
+        num, self.camname = Camera()
+        self.camcombox.addItems(self.camname)
+
+    def backcaminfo(self):
         pass
     '''------------------右侧主页面设计------------------'''
     def createright(self):
@@ -287,13 +315,10 @@ class MainWin(QMainWindow):
     '''------------------视频检测------------------'''
     def run(self):
         setname = self.combox.currentText()
-        print(setname)
         f = open('D:\pythonfile\yolov4-tiny-tf2-master\gui\setup\\'+setname+'.txt', 'r')
         line = f.read()
         f.close()
         fp1, fp2 = line.split()
-        print(fp1)
-        print(fp2)
         YOLO.update(fp1=fp1, fp2=fp2)
         vedio()
 
