@@ -15,7 +15,9 @@ def vedio():
 
     yolo = YOLO()
     # 调用摄像头
-    capture = cv2.VideoCapture(0)  # capture=cv2.VideoCapture("1.mp4")
+    f = open('D:\pythonfile\yolov4-tiny-tf2-master\gui\camsetup\camset.txt', 'r')
+    n = f.read()
+    capture = cv2.VideoCapture(int(n))  # capture=cv2.VideoCapture("1.mp4")
 
     fps = 0.0
     t1 = time.time()

@@ -27,7 +27,9 @@ class MainWin(QMainWindow):
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         '''------------------config------------------'''
         self.name = []
-        self.setuppath = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup'
+        self.setuppath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/setup'
+        self.default_imgsavepath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/outimage'
+        self.camsetpath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/camsetup/camset.txt'
         '''------------------------------------------'''
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
@@ -136,9 +138,10 @@ class MainWin(QMainWindow):
 
     def savesetup(self):
         if self.nameLineEdit.text() != '':
-            f = open('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\setup\\' + self.nameLineEdit.text() + '.txt',
+            f = open(self.setuppath + '/' + self.nameLineEdit.text() + '.txt',
                      'w')
             f.write(self.weightLineEdit.text() + ' ' + self.classLineEdit.text())
+            f.close()
             self.createdialog.reject()
             self.name = []
             self.setinfo()
@@ -184,7 +187,7 @@ class MainWin(QMainWindow):
     '''删除配置'''
     def deletesetup(self):
         if self.delenamecombox.currentText() != ' ':
-            filename = 'D:\pythonfile\yolov4-tiny-tf2-master\gui\setup\\' + self.delenamecombox.currentText() + '.txt'
+            filename = self.setuppath + '/' + self.delenamecombox.currentText() + '.txt'
             os.remove(filename)
             self.deledialog.reject()
             self.name = []
@@ -217,10 +220,35 @@ class MainWin(QMainWindow):
     def caminfo(self):
         self.camname = []
         num, self.camname = Camera()
+        self.camcombox.clear()
         self.camcombox.addItems(self.camname)
 
     def backcaminfo(self):
-        pass
+        camsetfile = open(self.camsetpath, 'w')
+
+        def is_number(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                pass
+
+            try:
+                import unicodedata
+                unicodedata.numeric(s)
+                return True
+            except (TypeError, ValueError):
+                pass
+
+            return False
+
+        if is_number(self.camcombox.currentText()):
+            camsetfile.write(self.camcombox.currentText())
+        else:
+            camsetfile.write('0')
+        camsetfile.close()
+        self.camdialog.reject()
+
     '''------------------右侧主页面设计------------------'''
     def createright(self):
         self.rightBox = QGroupBox()
@@ -313,7 +341,7 @@ class MainWin(QMainWindow):
         self.imageLabel1.setPixmap(QPixmap(self.fname))
     def runImage(self):
         if self.imgsavepath:
-            self.image = runimage(self.fname, 'D:/pythonfile/yolov4-tiny-tf2-master/gui/outimage')
+            self.image = runimage(self.fname, self.default_imgsavepath)
         else:
             self.image = runimage(self.fname, self.imgsavepath)
     def seeout(self):
