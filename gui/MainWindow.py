@@ -5,9 +5,16 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from gui.video_gui import vedio
 from gui.picture_gui import runimage
-from gui.yolo_gui_vedio import YOLO
 from gui.cameraset import Camera
 import os
+from gui.yolo_gui_vedio import YOLO
+from PIL import Image
+import numpy as np
+import cv2
+import time
+import tensorflow as tf
+import threading
+
 
 
 class MainWin(QMainWindow):
@@ -22,11 +29,12 @@ class MainWin(QMainWindow):
         self.setup = self.bar.addMenu("配置")
         self.help = self.bar.addMenu("帮助")
         self.exit = self.bar.addMenu("退出")
-        self.toolbar = QToolBar
+        self.toolbar = QToolBar()
         self.toolbar = self.addToolBar("工具栏")
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         '''------------------config------------------'''
         self.name = []
+        self.guiimgpath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/image/'
         self.setuppath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/setup'
         self.default_imgsavepath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/outimage'
         self.camsetpath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/camsetup/camset.txt'
@@ -53,19 +61,19 @@ class MainWin(QMainWindow):
         self.exitsys.triggered.connect(self.onClick_exit)
         self.exit.addAction(self.exitsys)
 
-        self.newsit = QAction(QIcon('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\image\\newsit.png'), "新建场景", self)
+        self.newsit = QAction(QIcon(self.guiimgpath+'newsit.png'), "新建场景", self)
         self.newsit.triggered.connect(self.CreateSit)
         self.toolbar.addAction(self.newsit)
-        self.delete = QAction(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\delete.png'), "删除场景", self)
+        self.delete = QAction(QIcon(self.guiimgpath+'delete.png'), "删除场景", self)
         self.delete.triggered.connect(self.DeleteSit)
         self.toolbar.addAction(self.delete)
-        self.newcamera = QAction(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\camera.png'), "摄像头配置", self)
+        self.newcamera = QAction(QIcon(self.guiimgpath+'camera.png'), "摄像头配置", self)
         self.newcamera.triggered.connect(self.cameraset)
         self.toolbar.addAction(self.newcamera)
-        self.picture = QAction(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\picture.png'), "图像识别", self)
+        self.picture = QAction(QIcon(self.guiimgpath+'picture.png'), "图像识别", self)
         self.picture.triggered.connect(self.picturemode)
         self.toolbar.addAction(self.picture)
-        self.exitsystool = QAction(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\exit.png'), "退出系统", self)
+        self.exitsystool = QAction(QIcon(self.guiimgpath+'exit.png'), "退出系统", self)
         self.exitsystool.triggered.connect(self.onClick_exit)
         self.toolbar.addAction(self.exitsystool)
 
@@ -252,18 +260,18 @@ class MainWin(QMainWindow):
     '''------------------右侧主页面设计------------------'''
     def createright(self):
         self.rightBox = QGroupBox()
-        self.layout = QGridLayout()
+        self.rightlayout = QGridLayout()
         self.graphic1 = QLabel()
-        self.graphic1.setPixmap(QPixmap('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\image\\NUAA_logo.png'))
+        self.graphic1.setPixmap(QPixmap(self.guiimgpath+'NUAA_logo.png'))
         self.graphic2 = QLabel()
-        self.graphic2.setPixmap(QPixmap('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\image\\haier_logo.png'))
+        self.graphic2.setPixmap(QPixmap(self.guiimgpath+'haier_logo.png'))
         self.graphic3 = QLabel()
-        self.graphic3.setPixmap(QPixmap('D:\\pythonfile\\yolov4-tiny-tf2-master\\gui\\image\\txt.png'))
-        self.layout.addWidget(self.graphic1, 0, 0, 1, 1)
-        self.layout.addWidget(self.graphic2, 0, 1, 1, 1)
-        self.layout.addWidget(self.graphic3, 1, 0, 1, 2)
-        self.layout.setSpacing(20)
-        self.rightBox.setLayout(self.layout)
+        self.graphic3.setPixmap(QPixmap(self.guiimgpath+'txt.png'))
+        self.rightlayout.addWidget(self.graphic1, 0, 0, 1, 1)
+        self.rightlayout.addWidget(self.graphic2, 0, 1, 1, 1)
+        self.rightlayout.addWidget(self.graphic3, 1, 0, 1, 2)
+        self.rightlayout.setSpacing(20)
+        self.rightBox.setLayout(self.rightlayout)
     '''------------------左侧主页面设计------------------'''
     def createleft(self):
         self.leftBox = QGroupBox()
@@ -278,6 +286,8 @@ class MainWin(QMainWindow):
         self.buttonexit.clicked.connect(self.onClick_exit)
         self.buttonok = QPushButton("确定应用场景")
         self.buttonok.clicked.connect(self.run)
+        self.buttonstop = QPushButton("停止视频检测")
+        self.buttonstop.clicked.connect(self.stopvedio)
         self.layout.addStretch()
         self.layout.addWidget(self.label, 0)
         self.layout.addStretch()
@@ -285,7 +295,9 @@ class MainWin(QMainWindow):
         self.layout.addStretch()
         self.layout.addWidget(self.buttonok, 3)
         self.layout.addStretch()
-        self.layout.addWidget(self.buttonexit, 4)
+        self.layout.addWidget(self.buttonstop, 4)
+        self.layout.addStretch()
+        self.layout.addWidget(self.buttonexit, 5)
         self.layout.addStretch()
         self.leftBox.setLayout(self.layout)
     '''------------------配置信息------------------'''
@@ -352,12 +364,70 @@ class MainWin(QMainWindow):
     '''------------------视频检测------------------'''
     def run(self):
         setname = self.combox.currentText()
-        f = open('D:\pythonfile\yolov4-tiny-tf2-master\gui\setup\\'+setname+'.txt', 'r')
+        f = open(self.setuppath+'/'+setname+'.txt', 'r')
         line = f.read()
         f.close()
         fp1, fp2 = line.split()
         YOLO.update(fp1=fp1, fp2=fp2)
-        vedio()
+        self.updatelayout()
+
+    def updatelayout(self):
+        self.graphic1.hide()
+        self.graphic2.hide()
+        self.graphic3.hide()
+        self.vedio = QLabel()
+        self.rightlayout.addWidget(self.vedio)
+        self.showvedio()
+
+    def showvedio(self):
+        gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        yolo = YOLO()
+        # 调用摄像头
+        f = open('D:\pythonfile\yolov4-tiny-tf2-master\gui\camsetup\camset.txt', 'r')
+        n = f.read()
+        self.capture = cv2.VideoCapture(int(n))  # capture=cv2.VideoCapture("1.mp4")
+        fps = 0.0
+        t1 = time.time()
+        self.stopEvent = threading.Event()
+        self.stopEvent.clear()
+        while (True):
+            t1 = time.time()
+            # 读取某一帧
+            ref, frame = self.capture.read()
+            # 格式转变，BGRtoRGB
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # 转变成Image
+            frame = Image.fromarray(np.uint8(frame))
+            # 进行检测
+            frame = np.array(yolo.detect_image(frame))
+            # RGBtoBGR满足opencv显示格式
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            fps = (fps + (1. / (time.time() - t1))) / 2
+            print("fps= %.2f" % (fps))
+            frame = cv2.putText(frame, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            frame = cv2.resize(frame, (800, 600))
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            show = frame
+            showImage = QImage(show.data, show.shape[1], show.shape[0], QImage.Format_RGB888)
+            self.vedio.setPixmap(QPixmap.fromImage(showImage))
+            t1 = time.time()
+            self.c = cv2.waitKey(1) & 0xff
+            if self.c == 27:
+                self.capture.release()
+                break
+            if True == self.stopEvent.is_set():
+                # 关闭事件置为未触发，清空显示label
+                self.capture.release()
+                break
+        tf.keras.backend.clear_session()
+        cv2.destroyAllWindows()
+
+    def stopvedio(self):
+        self.vedio.setPixmap(QPixmap(self.guiimgpath+'stopimg.png'))
+        self.stopEvent.set()
+
 
 if __name__ =='__main__':
     app = QApplication(sys.argv)
