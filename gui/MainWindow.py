@@ -3,7 +3,6 @@ import os
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from gui.video_gui import vedio
 from gui.picture_gui import runimage
 from gui.cameraset import Camera
 import os
