@@ -384,7 +384,7 @@ class MainWin(QMainWindow):
             tf.config.experimental.set_memory_growth(gpu, True)
         yolo = YOLO()
         # 调用摄像头
-        f = open('D:\pythonfile\yolov4-tiny-tf2-master\gui\camsetup\camset.txt', 'r')
+        f = open(self.camsetpath, 'r')
         n = f.read()
         self.capture = cv2.VideoCapture(int(n))  # capture=cv2.VideoCapture("1.mp4")
         fps = 0.0
@@ -434,6 +434,3 @@ if __name__ =='__main__':
     main = MainWin()
     main.show()
     sys.exit(app.exec())
-
-
-
