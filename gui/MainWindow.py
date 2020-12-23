@@ -270,6 +270,9 @@ class MainWin(QMainWindow):
         self.rightlayout.addWidget(self.graphic2, 0, 1, 1, 1)
         self.rightlayout.addWidget(self.graphic3, 1, 0, 1, 2)
         self.rightlayout.setSpacing(20)
+        self.vedio = QLabel()
+        self.rightlayout.addWidget(self.vedio)
+        self.vedio.hide()
         self.rightBox.setLayout(self.rightlayout)
     '''------------------左侧主页面设计------------------'''
     def createleft(self):
@@ -374,8 +377,7 @@ class MainWin(QMainWindow):
         self.graphic1.hide()
         self.graphic2.hide()
         self.graphic3.hide()
-        self.vedio = QLabel()
-        self.rightlayout.addWidget(self.vedio)
+        self.vedio.show()
         self.showvedio()
 
     def showvedio(self):
@@ -424,7 +426,10 @@ class MainWin(QMainWindow):
         cv2.destroyAllWindows()
 
     def stopvedio(self):
-        self.vedio.setPixmap(QPixmap(self.guiimgpath+'stopimg.png'))
+        self.vedio.hide()
+        self.graphic1.show()
+        self.graphic2.show()
+        self.graphic3.show()
         self.stopEvent.set()
 
 
