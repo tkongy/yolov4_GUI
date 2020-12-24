@@ -32,7 +32,7 @@ class MainWin(QMainWindow):
         '''------------------config------------------'''
         mainpath = os.getcwd()
         self.name = []
-        self.guiimgpath = mainpath+'/image/'
+        self.guiimgpath = mainpath+'/guiimg/'
         self.setuppath = mainpath+'/setup'
         self.default_imgsavepath = mainpath+'/outimage'
         self.camsetpath = mainpath+'/camsetup/camset.txt'
@@ -456,7 +456,7 @@ class MainWin(QMainWindow):
 
 if __name__ =='__main__':
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('/image/logo.ico'))
+    app.setWindowIcon(QIcon('guiimg/logo.ico'))
     main = MainWin()
     main.show()
     sys.exit(app.exec())
