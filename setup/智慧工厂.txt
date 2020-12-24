@@ -1,0 +1,1 @@
+D:/pythonfile/yolov4-tiny-tf2-master/model_data/weight.h5 D:/pythonfile/yolov4-tiny-tf2-master/model_data/classes.txt D:/pythonfile/yolov4-tiny-tf2-master/model_data/yolo_anchors.txt
