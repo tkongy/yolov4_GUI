@@ -1,15 +1,13 @@
 import os
 import numpy as np
-import copy
 import colorsys
 import tensorflow as tf
 from timeit import default_timer as timer
 import tensorflow.keras.backend as K
-from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Lambda
 from tensorflow.keras.models import Model
-from PIL import Image, ImageFont, ImageDraw
+from PIL import ImageFont, ImageDraw
 from nets.yolo4_tiny import yolo_body, yolo_eval
 from utils.utils import letterbox_image
 
@@ -17,7 +15,7 @@ from utils.utils import letterbox_image
 class YOLO(object):
     _defaults = {
         "model_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\weight.h5',
-        "anchors_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\yolo_anchors.txt',
+        "anchors_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\yolo_anchors1111.txt',
         "classes_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\classes.txt',
         "score": 0.5,
         "iou": 0.3,

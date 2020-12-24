@@ -1,5 +1,4 @@
 import sys
-import os
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -13,7 +12,6 @@ import cv2
 import time
 import tensorflow as tf
 import threading
-
 
 
 class MainWin(QMainWindow):
@@ -32,11 +30,12 @@ class MainWin(QMainWindow):
         self.toolbar = self.addToolBar("工具栏")
         self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         '''------------------config------------------'''
+        mainpath = os.getcwd()
         self.name = []
-        self.guiimgpath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/image/'
-        self.setuppath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/setup'
-        self.default_imgsavepath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/outimage'
-        self.camsetpath = 'D:/pythonfile/yolov4-tiny-tf2-master/gui/camsetup/camset.txt'
+        self.guiimgpath = mainpath+'/image/'
+        self.setuppath = mainpath+'/setup'
+        self.default_imgsavepath = mainpath+'/outimage'
+        self.camsetpath = mainpath+'/camsetup/camset.txt'
         '''------------------------------------------'''
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
@@ -115,6 +114,14 @@ class MainWin(QMainWindow):
         self.classButton = QPushButton('加载类别')
         self.classButton.clicked.connect(self.onClick_class)
 
+        self.anchorLabel = QLabel('&Anchor', self)
+        self.anchorLabel.setText('多窗口尺度(&C)')
+        self.anchorLineEdit = QLineEdit(self)
+        self.anchorLineEdit.setPlaceholderText('请输入Anchor文件地址')
+        self.anchorLabel.setBuddy(self.anchorLineEdit)
+        self.anchorButton = QPushButton('加载anchor')
+        self.anchorButton.clicked.connect(self.onClick_anchor)
+
         self.btnOK = QPushButton('确定')
         self.btnOK.clicked.connect(self.savesetup)
         self.btnCancel = QPushButton('取消')
@@ -136,9 +143,13 @@ class MainWin(QMainWindow):
         self.createLayout.addWidget(self.classLineEdit, 2, 1, 1, 2)
         self.createLayout.addWidget(self.classButton, 2, 3, 1, 1)
 
-        self.createLayout.addWidget(self.btnOK, 3, 1)
-        self.createLayout.addWidget(self.btnCancel, 3, 2)
-        self.createLayout.addWidget(self.btnExit, 3, 3)
+        self.createLayout.addWidget(self.anchorLabel, 3, 0)
+        self.createLayout.addWidget(self.anchorLineEdit, 3, 1, 1, 2)
+        self.createLayout.addWidget(self.anchorButton, 3, 3, 1, 1)
+
+        self.createLayout.addWidget(self.btnOK, 4, 1)
+        self.createLayout.addWidget(self.btnCancel, 4, 2)
+        self.createLayout.addWidget(self.btnExit, 4, 3)
         self.createdialog.setLayout(self.createLayout)
 
         self.createdialog.exec()
@@ -147,7 +158,7 @@ class MainWin(QMainWindow):
         if self.nameLineEdit.text() != '':
             f = open(self.setuppath + '/' + self.nameLineEdit.text() + '.txt',
                      'w')
-            f.write(self.weightLineEdit.text() + ' ' + self.classLineEdit.text())
+            f.write(self.weightLineEdit.text() + ' ' + self.classLineEdit.text()+ ' '+ self.anchorLineEdit.text())
             f.close()
             self.createdialog.reject()
             self.name = []
@@ -162,6 +173,10 @@ class MainWin(QMainWindow):
     def onClick_class(self):
         classpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.txt )')
         self.classLineEdit.setText(classpath)
+    def onClick_anchor(self):
+        anchorpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.txt )')
+        self.anchorLineEdit.setText(anchorpath)
+
     '''------------------联系我们------------------'''
     def connect_us(self):
         pass
@@ -354,6 +369,12 @@ class MainWin(QMainWindow):
         self.fname,_ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.jpg *.png)')
         self.imageLabel1.setPixmap(QPixmap(self.fname))
     def runImage(self):
+        setname = self.combox.currentText()
+        f = open(self.setuppath+'/'+setname+'.txt', 'r')
+        line = f.read()
+        f.close()
+        fp1, fp2, fp3 = line.split()
+        YOLO.update(fp1=fp1, fp2=fp2, fp3=fp3)
         if self.imgsavepath:
             self.image = runimage(self.fname, self.default_imgsavepath)
         else:
@@ -369,8 +390,8 @@ class MainWin(QMainWindow):
         f = open(self.setuppath+'/'+setname+'.txt', 'r')
         line = f.read()
         f.close()
-        fp1, fp2 = line.split()
-        YOLO.update(fp1=fp1, fp2=fp2)
+        fp1, fp2, fp3 = line.split()
+        YOLO.update(fp1=fp1, fp2=fp2, fp3=fp3)
         self.updatelayout()
 
     def updatelayout(self):
@@ -435,7 +456,7 @@ class MainWin(QMainWindow):
 
 if __name__ =='__main__':
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('D:\pythonfile\yolov4-tiny-tf2-master\gui\image\logo.ico'))
+    app.setWindowIcon(QIcon('/image/logo.ico'))
     main = MainWin()
     main.show()
     sys.exit(app.exec())

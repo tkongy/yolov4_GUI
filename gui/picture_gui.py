@@ -1,4 +1,4 @@
-from gui.yolo_gui import  YOLO
+from gui.yolo_gui_vedio import YOLO
 from PIL import Image
 import tensorflow as tf
 import os
