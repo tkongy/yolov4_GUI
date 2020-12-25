@@ -314,7 +314,7 @@ class MainWin(QMainWindow):
         self.buttonexit = QPushButton("退出应用程序")
         self.buttonexit.clicked.connect(self.onClick_exit)
         self.buttonok = QPushButton("确定应用场景")
-        self.buttonok.clicked.connect(self.run)
+        self.buttonok.clicked.connect(self.vediosetupcheck)
         self.buttonstop = QPushButton("停止视频检测")
         self.buttonstop.clicked.connect(self.stopvedio)
         self.layout.addStretch()
@@ -404,7 +404,6 @@ class MainWin(QMainWindow):
         else:
             self.showinfo.append(self.time_str + ' 请选择场景配置！')
 
-
     def runImage(self):
         f = open(self.setuppath+'/'+self.setname+'.txt', 'r')
         line = f.read()
@@ -416,14 +415,28 @@ class MainWin(QMainWindow):
         else:
             self.image = runimage(self.fname, self.imgsavepath)
         self.showinfo.append(self.time_str + ' 已成功完成图像检测！')
+
     def seeout(self):
         self.imageLabel2.setPixmap(QPixmap(self.image))
         self.showinfo.append(self.time_str + ' 已显示图像检测的结果！')
+
     def imgsavepath(self):
         self.imgsavepath = QFileDialog.getExistingDirectory(self, '保存路径')
         self.imgpath.setText(self.imgsavepath)
         self.showinfo.append(self.time_str + ' 已成功设置检测图像保存路径！')
     '''------------------视频检测------------------'''
+    def vediosetupcheck(self):
+        self.setname = self.combox.currentText()
+        for _ in range(0, len(self.name)-1):
+            if self.setname == self.name[_]:
+                flag = 0
+            else:
+                flag = 1
+        if flag == 0:
+            self.run()
+        else:
+            self.showinfo.append(self.time_str + ' 请选择场景配置！')
+
     def run(self):
         setname = self.combox.currentText()
         f = open(self.setuppath+'/'+setname+'.txt', 'r')
