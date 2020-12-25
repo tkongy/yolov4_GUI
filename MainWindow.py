@@ -12,6 +12,7 @@ import cv2
 import time
 import tensorflow as tf
 import threading
+import datetime
 
 
 class MainWin(QMainWindow):
@@ -37,6 +38,8 @@ class MainWin(QMainWindow):
         self.default_imgsavepath = mainpath+'/outimage'
         self.camsetpath = mainpath+'/camsetup/camset.txt'
         '''------------------------------------------'''
+        self.curr_time = datetime.datetime.now()
+        self.time_str = datetime.datetime.strftime(self.curr_time, '%Y-%m-%d %H:%M:%S')
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
         self.createset.triggered.connect(self.CreateSit)
@@ -79,12 +82,15 @@ class MainWin(QMainWindow):
         self.status.showMessage('欢迎进入明火烟雾检测系统！', 5000)
         self.createright()
         self.createleft()
+        self.createdown()
         self.mainbox = QWidget()
-        self.mainlayout = QHBoxLayout()
-        self.mainlayout.addWidget(self.leftBox)
-        self.mainlayout.addWidget(self.rightBox)
+        self.mainlayout = QGridLayout()
+        self.mainlayout.addWidget(self.leftBox, 0, 0, 5, 1)
+        self.mainlayout.addWidget(self.rightBox, 0, 1, 5, 4)
+        self.mainlayout.addWidget(self.downBox, 5, 0, 2, 5)
         self.mainbox.setLayout(self.mainlayout)
         self.setCentralWidget(self.mainbox)
+        self.showinfo.append(self.time_str+' 欢迎进入明火烟雾智能检测系统！')
     '''------------------新建场景------------------'''
     def CreateSit(self):
         self.createdialog = QDialog()
@@ -160,6 +166,7 @@ class MainWin(QMainWindow):
                      'w')
             f.write(self.weightLineEdit.text() + ' ' + self.classLineEdit.text()+ ' '+ self.anchorLineEdit.text())
             f.close()
+            self.showinfo.append(self.time_str+' 已成功保存场景配置！')
             self.createdialog.reject()
             self.name = []
             self.setinfo()
@@ -169,17 +176,20 @@ class MainWin(QMainWindow):
     def onClick_weight(self):
         weightpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.h5 )')
         self.weightLineEdit.setText(weightpath)
+        self.showinfo.append(self.time_str+' 已成功载入场景权重！')
 
     def onClick_class(self):
         classpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.txt )')
         self.classLineEdit.setText(classpath)
+        self.showinfo.append(self.time_str+' 已成功载入场景类别！')
     def onClick_anchor(self):
         anchorpath, _ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.txt )')
         self.anchorLineEdit.setText(anchorpath)
+        self.showinfo.append(self.time_str+' 已成功载入anchor文件！')
 
     '''------------------联系我们------------------'''
     def connect_us(self):
-        pass
+        self.showinfo.append('请联系邮箱:zgshang@nuaa.edu.cn')
     '''------------------删除场景------------------'''
     def DeleteSit(self):
         self.deledialog = QDialog()
@@ -211,6 +221,7 @@ class MainWin(QMainWindow):
         if self.delenamecombox.currentText() != ' ':
             filename = self.setuppath + '/' + self.delenamecombox.currentText() + '.txt'
             os.remove(filename)
+            self.showinfo.append(self.time_str + ' 已成功删除场景配置！')
             self.deledialog.reject()
             self.name = []
             self.setinfo()
@@ -269,6 +280,7 @@ class MainWin(QMainWindow):
         else:
             camsetfile.write('0')
         camsetfile.close()
+        self.showinfo.append(self.time_str + ' 已成功完成摄像头配置！')
         self.camdialog.reject()
 
     '''------------------右侧主页面设计------------------'''
@@ -317,6 +329,14 @@ class MainWin(QMainWindow):
         self.layout.addWidget(self.buttonexit, 5)
         self.layout.addStretch()
         self.leftBox.setLayout(self.layout)
+    '''------------------下侧主页面设计------------------'''
+    def createdown(self):
+        self.downBox = QGroupBox()
+        self.downlayout = QHBoxLayout()
+        self.showinfo = QTextBrowser()
+
+        self.downlayout.addWidget(self.showinfo)
+        self.downBox.setLayout(self.downlayout)
     '''------------------配置信息------------------'''
     def setinfo(self):
         def listdir(path, list_name):
@@ -342,6 +362,7 @@ class MainWin(QMainWindow):
         self.imgdialog.setWindowTitle('图像检测')
         self.imgdialog.resize(360, 300)
         self.setWindowModality(Qt.ApplicationModal)
+        self.showinfo.append(self.time_str + ' 已成功打开图像检测窗口！')
 
         self.layout = QGridLayout()
         self.button1 = QPushButton('加载图片')
@@ -351,7 +372,7 @@ class MainWin(QMainWindow):
         self.imgpath = QLineEdit()
         self.imgpathbuttton.clicked.connect(self.imgsavepath)
         self.button2 = QPushButton('运行检测')
-        self.button2.clicked.connect(self.runImage)
+        self.button2.clicked.connect(self.setupcheck)
         self.imageLabel2 = QLabel()
         self.button3 = QPushButton('查看结果')
         self.button3.clicked.connect(self.seeout)
@@ -365,12 +386,27 @@ class MainWin(QMainWindow):
         self.layout.addWidget(self.imageLabel2, 5, 0, 2, 2)
         self.imgdialog.setLayout(self.layout)
         self.imgdialog.exec()
+
     def loadImage(self):
         self.fname,_ = QFileDialog.getOpenFileName(self, '打开文件', '.', '图像文件(*.jpg *.png)')
         self.imageLabel1.setPixmap(QPixmap(self.fname))
+        self.showinfo.append(self.time_str + ' 已成功加载图片！')
+
+    def setupcheck(self):
+        self.setname = self.combox.currentText()
+        for _ in range(0, len(self.name)-1):
+            if self.setname == self.name[_]:
+                flag = 0
+            else:
+                flag = 1
+        if flag == 0:
+            self.runImage()
+        else:
+            self.showinfo.append(self.time_str + ' 请选择场景配置！')
+
+
     def runImage(self):
-        setname = self.combox.currentText()
-        f = open(self.setuppath+'/'+setname+'.txt', 'r')
+        f = open(self.setuppath+'/'+self.setname+'.txt', 'r')
         line = f.read()
         f.close()
         fp1, fp2, fp3 = line.split()
@@ -379,11 +415,14 @@ class MainWin(QMainWindow):
             self.image = runimage(self.fname, self.default_imgsavepath)
         else:
             self.image = runimage(self.fname, self.imgsavepath)
+        self.showinfo.append(self.time_str + ' 已成功完成图像检测！')
     def seeout(self):
         self.imageLabel2.setPixmap(QPixmap(self.image))
+        self.showinfo.append(self.time_str + ' 已显示图像检测的结果！')
     def imgsavepath(self):
         self.imgsavepath = QFileDialog.getExistingDirectory(self, '保存路径')
         self.imgpath.setText(self.imgsavepath)
+        self.showinfo.append(self.time_str + ' 已成功设置检测图像保存路径！')
     '''------------------视频检测------------------'''
     def run(self):
         setname = self.combox.currentText()
@@ -399,6 +438,7 @@ class MainWin(QMainWindow):
         self.graphic2.hide()
         self.graphic3.hide()
         self.vedio.show()
+        self.showinfo.append(self.time_str + ' 已成功运行视频检测！')
         self.showvedio()
 
     def showvedio(self):
@@ -452,6 +492,8 @@ class MainWin(QMainWindow):
         self.graphic2.show()
         self.graphic3.show()
         self.stopEvent.set()
+        self.showinfo.append(self.time_str + ' 已成功停止视频检测！')
+
 
 
 if __name__ =='__main__':
