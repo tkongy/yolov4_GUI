@@ -189,4 +189,4 @@ class YOLO(object):
 
         end = timer()
         print(end - start)
-        return image
+        return image, len(out_boxes)

@@ -37,9 +37,11 @@ class MainWin(QMainWindow):
         self.setuppath = mainpath+'/setup'
         self.default_imgsavepath = mainpath+'/outimage'
         self.camsetpath = mainpath+'/camsetup/camset.txt'
+        self.recordpath = mainpath + '/record'
         '''------------------------------------------'''
         self.curr_time = datetime.datetime.now()
         self.time_str = datetime.datetime.strftime(self.curr_time, '%Y-%m-%d %H:%M:%S')
+        self.time_record = datetime.datetime.strftime(self.curr_time, '%Y %m %d_%H %M')
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
         self.createset.triggered.connect(self.CreateSit)
@@ -74,6 +76,9 @@ class MainWin(QMainWindow):
         self.picture = QAction(QIcon(self.guiimgpath+'picture.png'), "图像识别", self)
         self.picture.triggered.connect(self.picturemode)
         self.toolbar.addAction(self.picture)
+        self.record = QAction(QIcon(self.guiimgpath+'record.png'), "查看日志", self)
+        self.record.triggered.connect(self.recordshow)
+        self.toolbar.addAction(self.record)
         self.exitsystool = QAction(QIcon(self.guiimgpath+'exit.png'), "退出系统", self)
         self.exitsystool.triggered.connect(self.onClick_exit)
         self.toolbar.addAction(self.exitsystool)
@@ -190,6 +195,67 @@ class MainWin(QMainWindow):
     '''------------------联系我们------------------'''
     def connect_us(self):
         self.showinfo.append('请联系邮箱:zgshang@nuaa.edu.cn')
+    '''------------------查看日志------------------'''
+    def recordshow(self):
+        self.showinfo.append(self.time_str + ' 已打开视频检测日志')
+        self.recordWindow()
+    '''------------------日志查看窗口------------------'''
+    def recordWindow(self):
+        self.recorddialog = QDialog()
+        self.recorddialog.setWindowTitle('查看日志')
+        self.recorddialog.setWindowModality(Qt.ApplicationModal)
+
+        self.recordnameLabel = QLabel('日志名称', self)
+        self.recordnamecombox = QComboBox()
+        self.recordnamecombox.setPlaceholderText('请选择要查看的日志名称')
+        self.recordname = []
+        def listdir(path, list_name):
+            for file in os.listdir(path):
+                file_path = file
+                if os.path.isdir(file_path):
+                    listdir(file_path, list_name)
+                elif os.path.splitext(file_path)[1] == '.txt':
+                    list_name.append(os.path.splitext(file_path)[0])
+            return list_name
+        self.recordname = listdir(self.recordpath, self.recordname)
+        self.recordnamecombox.addItems(self.recordname)
+
+        self.recordbtnOK = QPushButton('确定')
+        self.recordbtnOK.clicked.connect(self.showrecord)
+        self.recordbtnExit = QPushButton('退出')
+        self.recordbtnExit.clicked.connect(self.recorddialog.reject)
+        self.recordinfo = QTextBrowser()
+        self.recordinfo.resize(640, 480)
+
+        self.recordLayout = QGridLayout(self)
+        self.recordLayout.addWidget(self.recordnameLabel, 0, 0, 1, 1)
+        self.recordLayout.addWidget(self.recordnamecombox, 0, 1, 1, 2)
+        self.recordLayout.addWidget(self.recordinfo, 1, 0, 1, 3)
+        self.recordLayout.addWidget(self.recordbtnOK, 2, 1, 1, 1)
+        self.recordLayout.addWidget(self.recordbtnExit, 2, 2, 1, 1)
+        self.recorddialog.setLayout(self.recordLayout)
+
+        self.recorddialog.exec()
+
+    def showrecord(self):
+        self.filename = self.recordnamecombox.currentText()
+        for _ in range(0, len(self.recordname)):
+            if self.filename == self.recordname[_]:
+                flag = 0
+            else:
+                flag = 1
+        if flag == 0:
+            file = open(self.recordpath + '/' + self.filename + '.txt', "r")
+            fileContent = file.read()
+            file.close()
+            self.recordinfo.append(fileContent)
+            self.showinfo.append(self.time_str + ' 已成功显示日志！')
+        else:
+            self.showinfo.append(self.time_str + ' 请选择日志名称！')
+            self.recordtipshow()
+
+    def recordtipshow(self):
+        QMessageBox.question(self, '信息', '未选择日志名称，请选择日志名称!', QMessageBox.Yes)
     '''------------------删除场景------------------'''
     def DeleteSit(self):
         self.deledialog = QDialog()
@@ -255,6 +321,8 @@ class MainWin(QMainWindow):
         num, self.camname = Camera()
         self.camcombox.clear()
         self.camcombox.addItems(self.camname)
+        self.showinfo.append(self.time_str + ' 已成功获取摄像头配置')
+        QMessageBox.question(self, '信息', '摄像头检测完成，请选择摄像头序号!', QMessageBox.Yes)
 
     def backcaminfo(self):
         camsetfile = open(self.camsetpath, 'w')
@@ -317,17 +385,26 @@ class MainWin(QMainWindow):
         self.buttonok.clicked.connect(self.vediosetupcheck)
         self.buttonstop = QPushButton("停止视频检测")
         self.buttonstop.clicked.connect(self.stopvedio)
-        self.layout.addStretch()
+        self.firelogo = QLabel()
+        self.firelogo.setPixmap(QPixmap(self.guiimgpath+'nofire.png'))
+        self.layout.addStretch(1)
         self.layout.addWidget(self.label, 0)
-        self.layout.addStretch()
+        self.layout.setStretchFactor(self.label, 1)
+        self.layout.addStretch(1)
         self.layout.addWidget(self.combox, 1)
-        self.layout.addStretch()
+        self.layout.setStretchFactor(self.combox, 1)
+        self.layout.addStretch(1)
         self.layout.addWidget(self.buttonok, 3)
-        self.layout.addStretch()
+        self.layout.setStretchFactor(self.buttonok, 1)
+        self.layout.addStretch(1)
         self.layout.addWidget(self.buttonstop, 4)
-        self.layout.addStretch()
+        self.layout.setStretchFactor(self.buttonstop, 1)
+        self.layout.addStretch(1)
         self.layout.addWidget(self.buttonexit, 5)
-        self.layout.addStretch()
+        self.layout.setStretchFactor(self.buttonexit, 1)
+        self.layout.addStretch(1)
+        self.layout.addWidget(self.firelogo, 6)
+        self.layout.setStretchFactor(self.firelogo, 1)
         self.leftBox.setLayout(self.layout)
     '''------------------下侧主页面设计------------------'''
     def createdown(self):
@@ -394,7 +471,7 @@ class MainWin(QMainWindow):
 
     def setupcheck(self):
         self.setname = self.combox.currentText()
-        for _ in range(0, len(self.name)-1):
+        for _ in range(0, len(self.name)):
             if self.setname == self.name[_]:
                 flag = 0
             else:
@@ -403,6 +480,10 @@ class MainWin(QMainWindow):
             self.runImage()
         else:
             self.showinfo.append(self.time_str + ' 请选择场景配置！')
+            self.tipshow()
+
+    def tipshow(self):
+        QMessageBox.question(self, '信息', '未选择场景配置，请选择场景配置!', QMessageBox.Yes)
 
     def runImage(self):
         f = open(self.setuppath+'/'+self.setname+'.txt', 'r')
@@ -436,6 +517,7 @@ class MainWin(QMainWindow):
             self.run()
         else:
             self.showinfo.append(self.time_str + ' 请选择场景配置！')
+            self.tipshow()
 
     def run(self):
         setname = self.combox.currentText()
@@ -452,6 +534,7 @@ class MainWin(QMainWindow):
         self.graphic3.hide()
         self.vedio.show()
         self.showinfo.append(self.time_str + ' 已成功运行视频检测！')
+        self.frecord = open(self.recordpath + '/' + self.time_record + '_record.txt', "a")
         self.showvedio()
 
     def showvedio(self):
@@ -462,6 +545,7 @@ class MainWin(QMainWindow):
         # 调用摄像头
         f = open(self.camsetpath, 'r')
         n = f.read()
+        f.close()
         self.capture = cv2.VideoCapture(int(n))  # capture=cv2.VideoCapture("1.mp4")
         fps = 0.0
         t1 = time.time()
@@ -476,11 +560,12 @@ class MainWin(QMainWindow):
             # 转变成Image
             frame = Image.fromarray(np.uint8(frame))
             # 进行检测
-            frame = np.array(yolo.detect_image(frame))
+            img, flag = yolo.detect_image(frame)
+            frame = np.array(img)
             # RGBtoBGR满足opencv显示格式
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             fps = (fps + (1. / (time.time() - t1))) / 2
-            print("fps= %.2f" % (fps))
+            # print("fps= %.2f" % (fps))
             frame = cv2.putText(frame, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             frame = cv2.resize(frame, (800, 600))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -489,12 +574,18 @@ class MainWin(QMainWindow):
             self.vedio.setPixmap(QPixmap.fromImage(showImage))
             t1 = time.time()
             self.c = cv2.waitKey(1) & 0xff
+            if flag:
+                self.firelogo.setPixmap(QPixmap(self.guiimgpath + 'fire.png'))
+                self.frecord.write(self.time_str + ' ' + str(flag) + '\n')
+            else:
+                self.firelogo.setPixmap(QPixmap(self.guiimgpath + 'nofire.png'))
             if self.c == 27:
                 self.capture.release()
                 break
             if True == self.stopEvent.is_set():
                 # 关闭事件置为未触发，清空显示label
                 self.capture.release()
+                self.frecord.close()
                 break
         tf.keras.backend.clear_session()
         cv2.destroyAllWindows()
