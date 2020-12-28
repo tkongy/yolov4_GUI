@@ -14,8 +14,8 @@ from utils.utils import letterbox_image
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\weight11111.h5',
-        "anchors_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\yolo_anchors1111.txt',
+        "model_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\weight.h5',
+        "anchors_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\yolo_anchors.txt',
         "classes_path": 'D:\pythonfile\yolov4-tiny-tf2-master\model_data\classes.txt',
         "score": 0.5,
         "iou": 0.3,

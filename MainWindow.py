@@ -239,9 +239,10 @@ class MainWin(QMainWindow):
 
     def showrecord(self):
         self.filename = self.recordnamecombox.currentText()
-        for _ in range(0, len(self.recordname)):
+        for _ in range(len(self.recordname)):
             if self.filename == self.recordname[_]:
                 flag = 0
+                break
             else:
                 flag = 1
         if flag == 0:
@@ -471,9 +472,10 @@ class MainWin(QMainWindow):
 
     def setupcheck(self):
         self.setname = self.combox.currentText()
-        for _ in range(0, len(self.name)):
+        for _ in range(len(self.name)):
             if self.setname == self.name[_]:
                 flag = 0
+                break
             else:
                 flag = 1
         if flag == 0:
@@ -485,6 +487,11 @@ class MainWin(QMainWindow):
     def tipshow(self):
         QMessageBox.question(self, '信息', '未选择场景配置，请选择场景配置!', QMessageBox.Yes)
 
+    def imgsavepath(self):
+        self.imgsavepath = QFileDialog.getExistingDirectory(self, '保存路径')
+        self.imgpath.setText(self.imgsavepath)
+        self.showinfo.append(self.time_str + ' 已成功设置检测图像保存路径！')
+
     def runImage(self):
         f = open(self.setuppath+'/'+self.setname+'.txt', 'r')
         line = f.read()
@@ -492,25 +499,21 @@ class MainWin(QMainWindow):
         fp1, fp2, fp3 = line.split()
         YOLO.update(fp1=fp1, fp2=fp2, fp3=fp3)
         if self.imgsavepath:
-            self.image = runimage(self.fname, self.default_imgsavepath)
+            self.imageoutpath = runimage(self.fname, self.default_imgsavepath)
         else:
-            self.image = runimage(self.fname, self.imgsavepath)
+            self.imageoutpath = runimage(self.fname, self.imgsavepath)
         self.showinfo.append(self.time_str + ' 已成功完成图像检测！')
 
     def seeout(self):
-        self.imageLabel2.setPixmap(QPixmap(self.image))
+        self.imageLabel2.setPixmap(QPixmap(self.imageoutpath))
         self.showinfo.append(self.time_str + ' 已显示图像检测的结果！')
-
-    def imgsavepath(self):
-        self.imgsavepath = QFileDialog.getExistingDirectory(self, '保存路径')
-        self.imgpath.setText(self.imgsavepath)
-        self.showinfo.append(self.time_str + ' 已成功设置检测图像保存路径！')
     '''------------------视频检测------------------'''
     def vediosetupcheck(self):
         self.setname = self.combox.currentText()
-        for _ in range(0, len(self.name)-1):
+        for _ in range(len(self.name)):
             if self.setname == self.name[_]:
                 flag = 0
+                break
             else:
                 flag = 1
         if flag == 0:

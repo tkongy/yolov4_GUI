@@ -6,10 +6,11 @@ import os
 gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
+
 def runimage(fn, savepath):
     yolo = YOLO()
     image = Image.open(fn)
-    r_image = yolo.detect_image(image)
+    r_image, flag = yolo.detect_image(image)
     #filename, extension = os.path.splitext(fn)
     #newfn = filename+'_out'+extension
     filepath, filename = os.path.split(fn)
