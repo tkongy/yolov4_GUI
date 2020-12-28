@@ -41,7 +41,7 @@ class MainWin(QMainWindow):
         '''------------------------------------------'''
         self.curr_time = datetime.datetime.now()
         self.time_str = datetime.datetime.strftime(self.curr_time, '%Y-%m-%d %H:%M:%S')
-        self.time_record = datetime.datetime.strftime(self.curr_time, '%Y %m %d_%H %M')
+        self.time_record = datetime.datetime.strftime(self.curr_time, '%Y.%m.%d.%H.%M')
         self.createset = QAction("新建场景")
         self.createset.setShortcut("Ctrl+N")
         self.createset.triggered.connect(self.CreateSit)
