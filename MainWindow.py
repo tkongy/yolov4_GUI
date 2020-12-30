@@ -195,6 +195,7 @@ class MainWin(QMainWindow):
     '''------------------联系我们------------------'''
     def connect_us(self):
         self.showinfo.append('请联系邮箱:zgshang@nuaa.edu.cn')
+        QMessageBox.question(self, '信息', '请联系邮箱:zgshang@nuaa.edu.cn', QMessageBox.Yes)
     '''------------------查看日志------------------'''
     def recordshow(self):
         self.showinfo.append(self.time_str + ' 已打开视频检测日志')
@@ -220,6 +221,8 @@ class MainWin(QMainWindow):
         self.recordname = listdir(self.recordpath, self.recordname)
         self.recordnamecombox.addItems(self.recordname)
 
+        self.recordbtnDel = QPushButton('删除')
+        self.recordbtnDel.clicked.connect(self.deleterecord)
         self.recordbtnOK = QPushButton('确定')
         self.recordbtnOK.clicked.connect(self.showrecord)
         self.recordbtnExit = QPushButton('退出')
@@ -231,6 +234,7 @@ class MainWin(QMainWindow):
         self.recordLayout.addWidget(self.recordnameLabel, 0, 0, 1, 1)
         self.recordLayout.addWidget(self.recordnamecombox, 0, 1, 1, 2)
         self.recordLayout.addWidget(self.recordinfo, 1, 0, 1, 3)
+        self.recordLayout.addWidget(self.recordbtnDel, 2, 0, 1, 1)
         self.recordLayout.addWidget(self.recordbtnOK, 2, 1, 1, 1)
         self.recordLayout.addWidget(self.recordbtnExit, 2, 2, 1, 1)
         self.recorddialog.setLayout(self.recordLayout)
@@ -251,6 +255,36 @@ class MainWin(QMainWindow):
             file.close()
             self.recordinfo.append(fileContent)
             self.showinfo.append(self.time_str + ' 已成功显示日志！')
+        else:
+            self.showinfo.append(self.time_str + ' 请选择日志名称！')
+            self.recordtipshow()
+
+    def deleterecord(self):
+        self.filename = self.recordnamecombox.currentText()
+        for _ in range(len(self.recordname)):
+            if self.filename == self.recordname[_]:
+                flag = 0
+                break
+            else:
+                flag = 1
+        if flag == 0:
+            filename = self.recordpath + '/' + self.recordnamecombox.currentText() + '.txt'
+            os.remove(filename)
+            self.showinfo.append(self.time_str + ' 已成功删除日志！')
+            self.recordname = []
+            self.recordnamecombox.clear()
+
+            def listdir(path, list_name):
+                for file in os.listdir(path):
+                    file_path = file
+                    if os.path.isdir(file_path):
+                        listdir(file_path, list_name)
+                    elif os.path.splitext(file_path)[1] == '.txt':
+                        list_name.append(os.path.splitext(file_path)[0])
+                return list_name
+
+            self.recordname = listdir(self.recordpath, self.recordname)
+            self.recordnamecombox.addItems(self.recordname)
         else:
             self.showinfo.append(self.time_str + ' 请选择日志名称！')
             self.recordtipshow()
